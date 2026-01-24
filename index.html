@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Form nhập liệu</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preload" href="assets/mocks/order-data.mock.json" as="fetch" crossorigin="anonymous" />
+    <script>
+      const API_URL = "https://script.google.com/macros/s/AKfycbxRHqnyvIWnrEgqYkz8uPZ0wXIaRH_f0T2zUVpnzcI/dev"; // CRUD Web App URL
+
+      function gasJsonp(params) {
+        return new Promise((resolve, reject) => {
+          const cb = "cb_" + Math.random().toString(36).slice(2);
+          params.callback = cb;
+
+          const qs = new URLSearchParams(params).toString();
+          const s = document.createElement("script");
+          s.src = API_URL + "?" + qs;
+
+          window[cb] = (resp) => {
+            cleanup();
+            if (resp && resp.ok) resolve(resp.result);
+            else reject(resp?.error || "Unknown error");
+          };
+
+          s.onerror = (e) => {
+            cleanup();
+            reject({ message: "Network error", event: e });
+          };
+
+          function cleanup() {
+            delete window[cb];
+            s.remove();
+          }
+
+          document.body.appendChild(s);
+        });
+      }
+
+      async function demo() {
+        // 1) login
+        const loginRes = await gasJsonp({ action: "login", accessCode: "dvit@123" });
+        const token = loginRes.sessionToken;
+
+        // 2) list
+        const list = await gasJsonp({ action: "list", sessionToken: token, q: "", page: 1, pageSize: 10 });
+        console.log("list", list);
+
+        // 3) create (data JSON)
+        const created = await gasJsonp({
+          action: "create",
+          sessionToken: token,
+          data: JSON.stringify({ Name: "Test", Phone: "0909", Note: "From localhost" }),
+        });
+        console.log("create", created);
+      }
+
+      // demo().catch(console.error);
+    </script>
+    <script>
+      const MOCK_DATA_URL = "assets/mocks/order-data.mock.json";
+      const mockState = {
+        orderMasters: [],
+        orderDetails: [],
+        changeRequests: [],
+        changeRequestBasics: [],
+        phieuNhaps: [],
+        phieuXuats: [],
+      };
+      let mockDataPromise = null;
+
+      async function loadMockOrderData() {
+        if (mockDataPromise) {
+          return mockDataPromise;
+        }
+        mockDataPromise = fetch(MOCK_DATA_URL, { cache: "no-cache" })
+          .then((resp) => (resp.ok ? resp.json() : null))
+          .then((json) => {
+            if (!json) return null;
+            mockState.orderMasters = (json.orderMasters || []).map((item) => ({ ...item }));
+            mockState.orderDetails = (json.orderDetails || []).map((item) => ({ ...item }));
+            mockState.changeRequests = (json.changeRequests || []).map((item) => ({ ...item }));
+            mockState.changeRequestBasics = (json.changeRequestBasics || []).map((item) => ({ ...item }));
+            mockState.phieuNhaps = (json.phieuNhaps || []).map((item) => ({ ...item }));
+            mockState.phieuXuats = (json.phieuXuats || []).map((item) => ({ ...item }));
+            mockState.hangHoas = (json.hangHoas || []).map((item) => ({ ...item }));
+            mockState.sanPhams = (json.sanPhams || []).map((item) => ({ ...item }));
+            mockState.khos = (json.khos || []).map((item) => ({ ...item }));
+            mockState.lienHes = (json.lienHes || []).map((item) => ({ ...item }));
+            mockState.khachHangs = (json.khachHangs || []).map((item) => ({ ...item }));
+            mockState.dvVanChuyens = (json.dvVanChuyens || []).map((item) => ({ ...item }));
+            mockState.statusChanges = (json.statusChanges || []).map((item) => ({ ...item }));
+            mockState.prepareCRs = (json.prepareCRs || []).map((item) => ({ ...item }));
+            mockState.contextKeys = (json.contextKeys || []).map((item) => ({ ...item }));
+            mockState.formConfigs = (json.formConfigs || []).map((item) => ({ ...item }));
+            return mockState;
+          })
+          .catch((error) => {
+            console.warn("Cannot load mock order data", error);
+            return null;
+          });
+        return mockDataPromise;
+      }
+
+      function getNextId(prefix, collection) {
+        const max = collection.reduce((maxValue, item) => {
+          const match = String(item?.id || "").match(/(\d+)$/);
+          const current = match ? parseInt(match[1], 10) : 0;
+          return Math.max(maxValue, current);
+        }, 0);
+        const next = (max || 0) + 1;
+        return `${prefix}${next.toString().padStart(3, "0")}`;
+      }
+
+      async function tryHandleMockApi(functionName, payload = {}) {
+        const data = await loadMockOrderData();
+        if (!data) {
+          return undefined;
+        }
+        const clone = (obj) => JSON.parse(JSON.stringify(obj));
+        switch (functionName) {
+          case "getAllData":
+            return { data: clone(data.orderMasters) };
+          case "getAllData_ChangeRequest":
+            return { data: clone(data.changeRequests) };
+          case "getAllData_ChangeRequestBasic":
+            return { data: clone(data.changeRequestBasics) };
+          case "getAllData_hangHoas":
+            return { data: clone(data.hangHoas) };
+          case "getAllData_sanPhams":
+            return { data: clone(data.sanPhams) };
+          case "getAllData_khos":
+            return { data: clone(data.khos) };
+          case "getAllData_lienHes":
+            return { data: clone(data.lienHes) };
+          case "getAllData_khachHangs":
+            return { data: clone(data.khachHangs) };
+          case "getAllData_dvVanChuyens":
+            return { data: clone(data.dvVanChuyens) };
+          case "getAllData_contextKeys":
+            return { data: clone(data.contextKeys) };
+          case "getById_phieuNhaps": {
+            const filtered = payload?.id ? data.phieuNhaps.find((item) => item.id === payload?.id) : null;
+            return { data: filtered ? clone(filtered) : null };
+          }
+          case "getById_phieuXuats": {
+            const filtered = payload?.id ? data.phieuXuats.find((item) => item.id === payload?.id) : null;
+            return { data: filtered ? clone(filtered) : null };
+          }
+          case "getAllData_statusHistoriesByChangeRequestId": {
+            const filtered = payload?.changeRequestId ? data.statusChanges.find((item) => item.changeRequestId === payload?.changeRequestId) : null;
+            return { data: filtered ? clone(filtered) : null };
+          }
+          case "getPrepareDataForChangeRequest": {
+            console.log("getPrepareDataForChangeRequest");
+            const { contextKey } = payload;
+            const recordId = payload?.recordId;
+
+            if (recordId) {
+              const filtered = data.prepareCRs.find((item) => item.contextKey === contextKey && item.objectIdsString === recordId);
+              cloneFiltered = filtered ? clone(filtered) : null;
+            } else {
+              const filtered = data.prepareCRs.find((item) => item.contextKey === contextKey);
+              cloneFiltered = filtered ? clone(filtered) : null;
+              if (cloneFiltered) cloneFiltered.originalData = {};
+            }
+            const formItems = data.formConfigs.find((item) => cloneFiltered && item.id === contextKey)?.formItems;
+            // get user changed data
+            const changeRequestId = payload?.changeRequestId;
+            if (changeRequestId) {
+              const editData = data.changeRequestBasics.find((item) => item.id === changeRequestId);
+              if (!editData) {
+                throw new Error(`Can't found changeRequestId: ${changeRequestId}`);
+              }
+              if (editData.contextKey !== contextKey) {
+                throw new Error(`Diff contextKey: editData: ${editData.contextKey} - params:${contextKey}`);
+              }
+              cloneFiltered = cloneFiltered ? { ...cloneFiltered, changedData: editData.changedData } : editData;
+            }
+            console.log({
+              cloneFiltered,
+            });
+            return { data: cloneFiltered ? { ...cloneFiltered, formItems } : null };
+          }
+          case "listPhieuXuat":
+            return { data: clone(data.phieuXuats) };
+          case "createData": {
+            const values = { ...(payload?.values || {}) };
+            if (!values.id) {
+              values.id = getNextId("OM-", data.orderMasters);
+            }
+            data.orderMasters.push({ ...values });
+            return { success: true, data: clone(values) };
+          }
+          case "createData_ChangeRequest": {
+            const values = { ...(payload?.values || {}) };
+            if (!values.id) {
+              values.id = getNextId("CR-", data.changeRequests);
+            }
+            if (!Array.isArray(values.statusChanges)) {
+              values.statusChanges = [];
+            }
+            data.changeRequests.push({ ...values });
+            return { success: true, data: clone(values) };
+          }
+          case "createData_ChangeRequestBasic": {
+            const values = { ...(payload?.values || {}) };
+            if (!values.id) {
+              values.id = getNextId("CRB-", data.changeRequestBasics);
+            }
+            data.changeRequestBasics.push({ ...values });
+            return { success: true, data: clone(values) };
+          }
+          case "updateData": {
+            const dataset = payload?.dataset;
+            const key = payload?.key || payload?.id || payload?.values?.id;
+            if (!key) return { success: false };
+            let collection;
+            if (dataset === "dsOrderDetail") {
+              collection = data.orderDetails;
+            } else if (dataset === "phieuNhap") {
+              collection = data.phieuNhaps;
+            } else if (dataset === "phieuXuat") {
+              collection = data.phieuXuats;
+            } else {
+              collection = data.orderMasters;
+            }
+            const index = collection.findIndex((item) => item.id === key);
+            if (index === -1) return { success: false };
+            const updated = { ...collection[index], ...(payload?.values || {}) };
+            collection[index] = updated;
+            return { success: true, data: clone(updated) };
+          }
+          case "updateData_ChangeRequest": {
+            const key = payload?.key || payload?.id || payload?.values?.id;
+            if (!key) return { success: false };
+            const index = data.changeRequests.findIndex((item) => item.id === key);
+            if (index === -1) return { success: false };
+            const updated = { ...data.changeRequests[index], ...(payload?.values || {}) };
+            data.changeRequests[index] = updated;
+            return { success: true, data: clone(updated) };
+          }
+          case "updateData_ChangeRequestBasic": {
+            const key = payload?.key || payload?.id || payload?.values?.id;
+            if (!key) return { success: false };
+            const index = data.changeRequestBasics.findIndex((item) => item.id === key);
+            if (index === -1) return { success: false };
+            const updated = { ...data.changeRequestBasics[index], ...(payload?.values || {}) };
+            data.changeRequestBasics[index] = updated;
+            return { success: true, data: clone(updated) };
+          }
+          case "softDeleteData": {
+            const dataset = payload?.dataset;
+            const key = payload?.key;
+            if (!key) return { success: false };
+            if (dataset === "dsOrderDetail") {
+              data.orderDetails = data.orderDetails.filter((item) => item.id !== key);
+            } else {
+              data.orderMasters = data.orderMasters.filter((item) => item.id !== key);
+            }
+            return { success: true };
+          }
+          case "deleteData_ChangeRequestBasic": {
+            const key = payload?.key || payload?.id;
+            if (!key) return { success: false };
+            data.changeRequestBasics = data.changeRequestBasics.filter((item) => item.id !== key);
+            return { success: true };
+          }
+          case "list": {
+            const page = Number(payload?.page || 1);
+            const pageSize = Number(payload?.pageSize || 10);
+            const start = (page - 1) * pageSize;
+            const items = data.orderDetails.slice(start, start + pageSize);
+            return {
+              items: clone(items),
+              total: data.orderDetails.length,
+            };
+          }
+          case "create": {
+            const raw = payload?.data;
+            const value = typeof raw === "string" ? JSON.parse(raw) : raw || {};
+            value.id = getNextId("OD-", data.orderDetails);
+            data.orderDetails.push({ ...value });
+            return { success: true, data: clone(value) };
+          }
+          case "listOrderDetailsByMaster":
+          case "listOrderDetails": {
+            const masterId = payload?.orderMasterId || payload?.OrderMasterID;
+            const filtered = masterId ? data.orderDetails.filter((item) => item.OrderMasterID === masterId) : data.orderDetails;
+            return {
+              items: clone(filtered),
+              total: filtered.length,
+            };
+          }
+          default:
+            return undefined;
+        }
+      }
+
+      async function wrapperApi(action, payload) {
+        const loginRes = await gasJsonp({ action: "login", accessCode: "dvit@123" });
+        const token = loginRes.sessionToken;
+        const payload_ = Object.assign(
+          {
+            action,
+            sessionToken: token,
+          },
+          payload
+        );
+
+        const result = await gasJsonp(payload_);
+        console.log(result);
+        return result;
+      }
+      window._appScriptApi = function (functionName, payload) {
+        return tryHandleMockApi(functionName, payload)
+          .then((mockResult) => {
+            if (mockResult !== undefined) {
+              console.log(`[mock-api] ${functionName}`, {
+                payload,
+                mockResult,
+              });
+              return mockResult;
+            }
+            return wrapperApi(functionName, payload);
+          })
+          .catch((error) => {
+            console.warn("Mock API failed, falling back to remote API", error);
+            return wrapperApi(functionName, payload);
+          });
+      };
+    </script>
+    <script>
+      const mockDataUpdatePN = {
+        newChangeRequestData: {
+          contextKey: "phieu-nhap",
+          changeType: "update",
+          objectRowIndexsString: "5",
+          objectIdsString: "PN-001",
+        },
+      };
+      const mockDataUpdatePX = {
+        newChangeRequestData: {
+          contextKey: "phieu-xuat",
+          changeType: "update",
+          objectRowIndexsString: "5",
+          objectIdsString: "PX-003",
+        },
+      };
+      const mockDataDelete = {
+        newChangeRequestData: {
+          contextKey: "phieu-xuat",
+          changeType: "delete",
+          objectRowIndexsString: "5",
+          objectIdsString: "PX-003",
+        },
+      };
+      const mockDataCreate = {
+        newChangeRequestData: {
+          contextKey: "phieu-xuat",
+          changeType: "create",
+          objectRowIndexsString: "18",
+          objectIdsString: "PX-004",
+        },
+      };
+      const mockDataEmpty = {};
+      const mock_currentUser = {
+        userId: "user-001",
+        userName: "test@",
+        accessCode: "dvit@123",
+        fullName: "Nguyen Van A",
+        email: "test@gmail.com",
+        permissions: [
+          { code: "change_request__grid__row-onApproveClick" },
+          { code: "change_request__grid__row-onDeleteButtonClick" },
+          { code: "change_request__grid__row-onEditButtonClick" },
+          { code: "change_request__grid__row-onRejectClick" },
+          { code: "change_request__grid__row-onReopenClick" },
+          { code: "change_request__grid__toolbarItems-onTaoYC_sua_xoa_them" },
+          { code: "change_request__popup-onSaveClick" },
+          { code: "change_request__grid__toolbarItems-onTaoYC" },
+        ],
+      };
+      window.__env = {
+        production: false,
+        apiBaseUrl: "",
+        currentUser: JSON.stringify(mock_currentUser),
+        initData: JSON.stringify(mockDataUpdatePN),
+      };
+      if(window.__env.production) {
+        window._console_log_backup = console.log;
+        console.log = function() {};
+      }
+    </script>
+  <link rel="stylesheet" href="styles.css"></head>
+  <body class="dx-viewport">
+    <app-root></app-root>
+  <script src="runtime-es2015.js" type="module"></script><script src="runtime-es5.js" nomodule defer></script><script src="polyfills-es5.js" nomodule defer></script><script src="polyfills-es2015.js" type="module"></script><script src="main-es2015.js" type="module"></script><script src="main-es5.js" nomodule defer></script></body>
+</html>
