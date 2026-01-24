@@ -153,8 +153,8 @@
             const filtered = payload?.changeRequestId ? data.statusChanges.find((item) => item.changeRequestId === payload?.changeRequestId) : null;
             return { data: filtered ? clone(filtered) : null };
           }
-          case "getPrepareDataForChangeRequest": {
-            console.log("getPrepareDataForChangeRequest");
+          case "Rpc.rpc_getPrepareDataForChangeRequest": {
+            console.log("Rpc.rpc_getPrepareDataForChangeRequest");
             const { contextKey } = payload;
             const recordId = payload?.recordId;
 
