@@ -5625,7 +5625,7 @@
       "objectIdsString": "PN-001",
       "originalData": {
         "id": "PN-001",
-        "soPhieu": "PN-001",
+        "soPhieu1": "PN-001",
         "soPhieuCu": "PN-000A",
         "date": "2025-02-01T08:00:00Z",
         "ma_hang": "MH-001",

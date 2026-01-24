@@ -127,18 +127,8 @@
             return { data: clone(data.changeRequests) };
           case "getAllData_ChangeRequestBasic":
             return { data: clone(data.changeRequestBasics) };
-          case "getAllData_hangHoas":
-            return { data: clone(data.hangHoas) };
-          case "getAllData_sanPhams":
-            return { data: clone(data.sanPhams) };
-          case "getAllData_khos":
-            return { data: clone(data.khos) };
-          case "getAllData_lienHes":
-            return { data: clone(data.lienHes) };
-          case "getAllData_khachHangs":
-            return { data: clone(data.khachHangs) };
-          case "getAllData_dvVanChuyens":
-            return { data: clone(data.dvVanChuyens) };
+          case "Rpc.rpc_getLookupOptions":
+            return { data: clone(data[payload.contextKey]) };
           case "getAllData_contextKeys":
             return { data: clone(data.contextKeys) };
           case "getById_phieuNhaps": {
