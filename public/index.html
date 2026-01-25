@@ -193,7 +193,7 @@
             data.changeRequests.push({ ...values });
             return { success: true, data: clone(values) };
           }
-          case "createData_ChangeRequestBasic": {
+          case "Rpc.rpc_createData_ChangeRequestBasic": {
             const values = { ...(payload?.values || {}) };
             if (!values.id) {
               values.id = getNextId("CRB-", data.changeRequestBasics);
@@ -669,7 +669,7 @@
         ],
       };
       const injectedData = (function () {
-        const data = mockDataEmpty;
+        const data = mockDataUpdatePN;
         data.sheetContexts = contextKeys;
         if (!data.newChangeRequestData) {
           return data;
