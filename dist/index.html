@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -297,7 +297,7 @@
             action,
             sessionToken: token,
           },
-          payload
+          payload,
         );
 
         const result = await gasJsonp(payload_);
@@ -323,6 +323,277 @@
       };
     </script>
     <script>
+      const formConfigs = [
+        {
+          id: "phieu-nhap",
+          formItems: [
+            {
+              dataField: "soPhieu",
+              label: "So phieu",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "soPhieuCu",
+              label: "So phieu cu",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "date",
+              label: "Ngay",
+              editorType: "dxDateBox",
+              editorOptions: {
+                displayFormat: "dd/MM/yyyy",
+                showClearButton: true,
+              },
+            },
+            {
+              dataField: "ma_hang",
+              colSpan: 2,
+              label: "Ma hang",
+              lookupKey: "hangHoas",
+            },
+            {
+              dataField: "ma_sp",
+              label: "Từ khóa",
+              lookupKey: "sanPhams",
+            },
+            {
+              dataField: "kho1",
+              label: "Kho nhập",
+              lookupKey: "khos",
+            },
+            {
+              dataField: "kho2",
+              label: "Kho xuất",
+              lookupKey: "khos",
+            },
+            {
+              dataField: "sl_nhap",
+              label: "SL nhập",
+              editorType: "dxNumberBox",
+              editorOptions: {
+                showSpinButtons: true,
+                format: "#,##0",
+              },
+            },
+            {
+              dataField: "don_gia",
+              label: "Đơn giá",
+              editorType: "dxNumberBox",
+              editorOptions: {
+                showSpinButtons: true,
+                format: "#,##0",
+              },
+            },
+            {
+              itemType: "empty",
+              colSpan: 2,
+            },
+            {
+              dataField: "ma_kh",
+              colSpan: 3,
+              label: "Công ty",
+              lookupKey: "khachHangs",
+            },
+            {
+              dataField: "file",
+              colSpan: 3,
+              label: "file",
+              template: "fileUrl",
+            },
+          ],
+        },
+        {
+          id: "phieu-xuat",
+          formItems: [
+            {
+              dataField: "soPhieu",
+              label: "So phieu",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "soPhieuCu",
+              label: "So phieu cu",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "date",
+              label: "Ngay",
+              editorType: "dxDateBox",
+              editorOptions: {
+                displayFormat: "dd/MM/yyyy",
+                showClearButton: true,
+              },
+            },
+            {
+              dataField: "ma_hang",
+              colSpan: 3,
+              label: "Ma hang",
+              lookupKey: "hangHoas",
+            },
+            {
+              dataField: "kho1",
+              label: "Kho xuất",
+              lookupKey: "khos",
+            },
+            {
+              dataField: "kho2",
+              label: "Kho nhập",
+              lookupKey: "khos",
+            },
+            {
+              dataField: "sl_xuat",
+              label: "SL xuất",
+              editorType: "dxNumberBox",
+              editorOptions: {
+                showSpinButtons: true,
+                format: "#,##0",
+              },
+            },
+            {
+              dataField: "bien_so_xe",
+              label: "Bien so xe",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "so_cont",
+              label: "So cont",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "so_chi",
+              label: "So chi",
+              editorType: "dxTextBox",
+            },
+            {
+              dataField: "ma_lien_he",
+              colSpan: 3,
+              label: "Ma lien he",
+              lookupKey: "lienHes",
+            },
+            {
+              dataField: "don_vi_vc",
+              label: "Ma lien he",
+              lookupKey: "dvVanChuyens",
+            },
+            {
+              dataField: "gia_vc",
+              label: "Gia VC",
+              editorType: "dxNumberBox",
+              editorOptions: {
+                showSpinButtons: true,
+                format: "#,##0",
+              },
+            },
+            {
+              itemType: "empty",
+            },
+            {
+              dataField: "ghi_chu",
+              colSpan: 3,
+              label: "Cong ty",
+              editorType: "dxTextBox",
+            },
+            {
+              itemType: "empty",
+              colSpan: 3,
+            },
+            {
+              dataField: "file",
+              colSpan: 3,
+              label: "File",
+              template: "fileUrl",
+            },
+            {
+              dataField: "fileDNTT",
+              colSpan: 3,
+              label: "DNTT",
+              template: "fileUrl",
+            },
+          ],
+        },
+      ];
+      const prepareCRs = [
+        {
+          contextKey: "phieu-nhap",
+          objectRowIndexsString: "5",
+          objectIdsString: "PN-001",
+          originalData: {
+            id: "PN-001",
+            soPhieu1: "PN-001",
+            soPhieuCu: "PN-000A",
+            date: "2025-02-01T08:00:00Z",
+            ma_hang: "MH-001",
+            ma_sp: "SP-1001",
+            kho1: "K1",
+            kho2: "K2",
+            sl_nhap: 120,
+            don_gia: 150000,
+            ma_kh: "KH-001",
+            file: "https://example.com/pn-001",
+            file__Text: "File",
+            createdBy: "user1",
+          },
+        },
+        {
+          contextKey: "phieu-xuat",
+          objectRowIndexsString: "5",
+          objectIdsString: "PX-003",
+          originalData: {
+            id: "PX-003",
+            soPhieu: "PX-003",
+            soPhieuCu: "PX-000A",
+            date: "2025-02-01T08:00:00Z",
+            ma_hang: "MH-001",
+            kho1: "K1",
+            kho2: "K2",
+            sl_xuat: 120,
+            bien_so_xe: "58-4564",
+            so_cont: "CNT123445",
+            so_chi: "E01234",
+            ma_lien_he: "LH-02",
+            file: "https://example.com/px-004",
+            don_vi_vc: "DVVC B",
+            gia_vc: 780000,
+            ghi_chu: "CTY A",
+            fileDNTT: "https://example.com/dntt-004",
+          },
+        },
+        {
+          contextKey: "phieu-xuat",
+          objectRowIndexsString: "5",
+          objectIdsString: "PX-003",
+          originalData: {
+            id: "PX-003",
+            soPhieu: "PX-003",
+            soPhieuCu: "PX-000A",
+            date: "2025-02-01T08:00:00Z",
+            ma_hang: "MH-001",
+            kho1: "K1",
+            kho2: "K2",
+            sl_xuat: 120,
+            bien_so_xe: "58-4564",
+            so_cont: "CNT123445",
+            so_chi: "E01234",
+            ma_lien_he: "LH-02",
+            file: "https://example.com/px-004",
+            don_vi_vc: "DVVC B",
+            gia_vc: 780000,
+            ghi_chu: "CTY A",
+            fileDNTT: "https://example.com/dntt-004",
+          },
+        },
+        {
+          contextKey: "phieu-xuat",
+          objectRowIndexsString: "18",
+          objectIdsString: "PX-004",
+          originalData: {
+            id: "PX-004",
+            soPhieu: "PX-004",
+            soPhieuCu: "PX-000A",
+          },
+        },
+      ];
       const mockDataUpdatePN = {
         newChangeRequestData: {
           contextKey: "phieu-nhap",
@@ -373,15 +644,21 @@
           { code: "change_request__grid__toolbarItems-onTaoYC" },
         ],
       };
+      const injectedData = (function () {
+        const data = mockDataUpdatePN;
+        data.newChangeRequestData.formItems = formConfigs.find((x) => x.id === data.newChangeRequestData.contextKey).formItems;
+        data.newChangeRequestData.originalData = prepareCRs.find((x) => x.contextKey == data.newChangeRequestData.contextKey && x.objectIdsString === data.newChangeRequestData.objectIdsString).originalData;
+        return data;
+      })();
       window.__env = {
         production: false,
         apiBaseUrl: "",
         currentUser: JSON.stringify(mock_currentUser),
-        initData: JSON.stringify(mockDataUpdatePN),
+        initData: JSON.stringify(injectedData),
       };
-      if(window.__env.production) {
+      if (window.__env.production) {
         window._console_log_backup = console.log;
-        console.log = function() {};
+        console.log = function () {};
       }
     </script>
   <link rel="stylesheet" href="styles.css"></head>
