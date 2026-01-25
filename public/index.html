@@ -170,7 +170,7 @@
             console.log({
               cloneFiltered,
             });
-            return { data: cloneFiltered ? { ...cloneFiltered, formItems } : null };
+            return { ok: true, data: cloneFiltered ? { ...cloneFiltered, formItems } : null };
           }
           case "listPhieuXuat":
             return { data: clone(data.phieuXuats) };
@@ -180,7 +180,7 @@
               values.id = getNextId("OM-", data.orderMasters);
             }
             data.orderMasters.push({ ...values });
-            return { success: true, data: clone(values) };
+            return { ok: true, data: clone(values) };
           }
           case "createData_ChangeRequest": {
             const values = { ...(payload?.values || {}) };
@@ -191,7 +191,7 @@
               values.statusChanges = [];
             }
             data.changeRequests.push({ ...values });
-            return { success: true, data: clone(values) };
+            return { ok: true, data: clone(values) };
           }
           case "Rpc.rpc_createData_ChangeRequestBasic": {
             const values = { ...(payload?.values || {}) };
@@ -199,12 +199,12 @@
               values.id = getNextId("CRB-", data.changeRequestBasics);
             }
             data.changeRequestBasics.push({ ...values });
-            return { success: true, data: clone(values) };
+            return { ok: false, data: clone(values) };
           }
           case "updateData": {
             const dataset = payload?.dataset;
             const key = payload?.key || payload?.id || payload?.values?.id;
-            if (!key) return { success: false };
+            if (!key) return { ok: false };
             let collection;
             if (dataset === "dsOrderDetail") {
               collection = data.orderDetails;
@@ -216,45 +216,45 @@
               collection = data.orderMasters;
             }
             const index = collection.findIndex((item) => item.id === key);
-            if (index === -1) return { success: false };
+            if (index === -1) return { ok: false };
             const updated = { ...collection[index], ...(payload?.values || {}) };
             collection[index] = updated;
-            return { success: true, data: clone(updated) };
+            return { ok: true, data: clone(updated) };
           }
           case "updateData_ChangeRequest": {
             const key = payload?.key || payload?.id || payload?.values?.id;
-            if (!key) return { success: false };
+            if (!key) return { ok: false };
             const index = data.changeRequests.findIndex((item) => item.id === key);
-            if (index === -1) return { success: false };
+            if (index === -1) return { ok: false };
             const updated = { ...data.changeRequests[index], ...(payload?.values || {}) };
             data.changeRequests[index] = updated;
-            return { success: true, data: clone(updated) };
+            return { ok: true, data: clone(updated) };
           }
           case "updateData_ChangeRequestBasic": {
             const key = payload?.key || payload?.id || payload?.values?.id;
-            if (!key) return { success: false };
+            if (!key) return { ok: false };
             const index = data.changeRequestBasics.findIndex((item) => item.id === key);
-            if (index === -1) return { success: false };
+            if (index === -1) return { ok: false };
             const updated = { ...data.changeRequestBasics[index], ...(payload?.values || {}) };
             data.changeRequestBasics[index] = updated;
-            return { success: true, data: clone(updated) };
+            return { ok: true, data: clone(updated) };
           }
           case "softDeleteData": {
             const dataset = payload?.dataset;
             const key = payload?.key;
-            if (!key) return { success: false };
+            if (!key) return { ok: false };
             if (dataset === "dsOrderDetail") {
               data.orderDetails = data.orderDetails.filter((item) => item.id !== key);
             } else {
               data.orderMasters = data.orderMasters.filter((item) => item.id !== key);
             }
-            return { success: true };
+            return { ok: true };
           }
           case "deleteData_ChangeRequestBasic": {
             const key = payload?.key || payload?.id;
-            if (!key) return { success: false };
+            if (!key) return { ok: false };
             data.changeRequestBasics = data.changeRequestBasics.filter((item) => item.id !== key);
-            return { success: true };
+            return { ok: true };
           }
           case "list": {
             const page = Number(payload?.page || 1);
@@ -271,7 +271,7 @@
             const value = typeof raw === "string" ? JSON.parse(raw) : raw || {};
             value.id = getNextId("OD-", data.orderDetails);
             data.orderDetails.push({ ...value });
-            return { success: true, data: clone(value) };
+            return { ok: true, data: clone(value) };
           }
           case "listOrderDetailsByMaster":
           case "listOrderDetails": {
