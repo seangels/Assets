@@ -113,7 +113,9 @@
         const next = (max || 0) + 1;
         return `${prefix}${next.toString().padStart(3, "0")}`;
       }
-
+      function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
       async function tryHandleMockApi(functionName, payload = {}) {
         const data = await loadMockOrderData();
         if (!data) {
@@ -126,8 +128,10 @@
           case "getAllData_ChangeRequest":
             return { data: clone(data.changeRequests) };
           case "Rpc.rpc_getAllData_ChangeRequestBasic":
+            await delay(3000);
             return { data: clone(data.changeRequestBasics) };
           case "Rpc.rpc_getLookupOptions":
+            await delay(1000);
             return { data: clone(data[payload.contextKey]) };
           case "getById_phieuNhaps": {
             const filtered = payload?.id ? data.phieuNhaps.find((item) => item.id === payload?.id) : null;
@@ -143,6 +147,7 @@
           }
           case "Rpc.rpc_getPrepareDataForChangeRequest": {
             console.log("Rpc.rpc_getPrepareDataForChangeRequest");
+            await delay(3000);
             const { contextKey } = payload;
             const recordId = payload?.recordId;
 
@@ -194,6 +199,7 @@
             return { ok: true, data: clone(values) };
           }
           case "Rpc.rpc_createData_ChangeRequestBasic": {
+            await delay(3000);
             const values = { ...(payload?.values || {}) };
             if (!values.id) {
               values.id = getNextId("CRB-", data.changeRequestBasics);
@@ -231,6 +237,7 @@
             return { ok: true, data: clone(updated) };
           }
           case "Rpc.rpc_updateData_ChangeRequestBasic": {
+            await delay(500);
             const key = payload?.key || payload?.id || payload?.values?.id;
             if (!key) return { ok: false };
             const index = data.changeRequestBasics.findIndex((item) => item.id === key);
