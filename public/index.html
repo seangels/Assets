@@ -230,7 +230,7 @@
             data.changeRequests[index] = updated;
             return { ok: true, data: clone(updated) };
           }
-          case "updateData_ChangeRequestBasic": {
+          case "Rpc.rpc_updateData_ChangeRequestBasic": {
             const key = payload?.key || payload?.id || payload?.values?.id;
             if (!key) return { ok: false };
             const index = data.changeRequestBasics.findIndex((item) => item.id === key);
