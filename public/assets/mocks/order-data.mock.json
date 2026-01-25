@@ -5698,28 +5698,6 @@
         "soPhieuCu": "PX-000A"
       }
     }
-  ],
-  "contextKeys": [
-    {
-      "id": "phieu-nhap",
-      "ten": "PhieuNhapMoi - 2025-XNT",
-      "fileName": "2025-XNT",
-      "fileId": "SHEET-002",
-      "sheetName": "PhieuNhapMoi"
-    },
-    {
-      "id": "phieu-xuat",
-      "ten": "DanhMucKho - 2025-XNT",
-      "fileName": "2025-XNT",
-      "fileId": "SHEET-002",
-      "sheetName": "DanhMucKho"
-    },
-    {
-      "id": "don-hang",
-      "ten": "TiepNhan2025 - QL Don Hang",
-      "fileName": "QL Don Hang",
-      "fileId": "SHEET-001",
-      "sheetName": "TiepNhan2025"
-    }
   ]
+
 }

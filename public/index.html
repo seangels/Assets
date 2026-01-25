@@ -129,8 +129,6 @@
             return { data: clone(data.changeRequestBasics) };
           case "Rpc.rpc_getLookupOptions":
             return { data: clone(data[payload.contextKey]) };
-          case "getAllData_contextKeys":
-            return { data: clone(data.contextKeys) };
           case "getById_phieuNhaps": {
             const filtered = payload?.id ? data.phieuNhaps.find((item) => item.id === payload?.id) : null;
             return { data: filtered ? clone(filtered) : null };
@@ -323,6 +321,32 @@
       };
     </script>
     <script>
+      const contextKeys = [
+        {
+          id: "phieu-nhap",
+          ten: "PhieuNhapMoi - 2025-XNT",
+          fileName: "2025-XNT",
+          fileId: "SHEET-002",
+          sheetName: "PhieuNhapMoi",
+          isShowUI: true,
+        },
+        {
+          id: "phieu-xuat",
+          ten: "DanhMucKho - 2025-XNT",
+          fileName: "2025-XNT",
+          fileId: "SHEET-002",
+          sheetName: "DanhMucKho",
+          isShowUI: true,
+        },
+        {
+          id: "don-hang",
+          ten: "TiepNhan2025 - QL Don Hang",
+          fileName: "QL Don Hang",
+          fileId: "SHEET-001",
+          sheetName: "TiepNhan2025",
+          isShowUI: true,
+        },
+      ];
       const formConfigs = [
         {
           id: "phieu-nhap",
@@ -645,7 +669,11 @@
         ],
       };
       const injectedData = (function () {
-        const data = mockDataUpdatePN;
+        const data = mockDataEmpty;
+        data.sheetContexts = contextKeys;
+        if (!data.newChangeRequestData) {
+          return data;
+        }
         data.newChangeRequestData.formItems = formConfigs.find((x) => x.id === data.newChangeRequestData.contextKey).formItems;
         data.newChangeRequestData.originalData = prepareCRs.find((x) => x.contextKey == data.newChangeRequestData.contextKey && x.objectIdsString === data.newChangeRequestData.objectIdsString).originalData;
         return data;
