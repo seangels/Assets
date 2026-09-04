@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>Quản lý báo giá</title>
+    <base href="./">    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preload" href="assets/mocks/bao-gia-master.mock.json" as="fetch" crossorigin="anonymous" />
+    <script>
+      (function setupLocalPreview(global) {
+        if (typeof global._appScriptApi === "function") {
+          return;
+        }
+
+        var mockDataUrl = "assets/mocks/bao-gia-master.mock.json";
+        var statePromise;
+
+        function clone(value) {
+          return JSON.parse(JSON.stringify(value));
+        }
+
+        function loadState() {
+          if (!statePromise) {
+            statePromise = fetch(mockDataUrl, { cache: "no-cache" })
+              .then(function (response) {
+                if (!response.ok) {
+                  throw new Error("Không thể tải dữ liệu mẫu");
+                }
+                return response.json();
+              })
+              .then(function (json) {
+                return { baoGiaMasters: (json.baoGiaMasters || []).map(function (item) { return Object.assign({}, item); }) };
+              });
+          }
+          return statePromise;
+        }
+
+        function nextId(items) {
+          var max = items.reduce(function (currentMax, item) {
+            var match = String(item.id || "").match(/(\d+)$/);
+            return Math.max(currentMax, match ? parseInt(match[1], 10) : 0);
+          }, 0);
+          return "BG-" + String(max + 1).padStart(3, "0");
+        }
+
+        global._appScriptApi = function (functionName, payload) {
+          payload = payload || {};
+          return loadState().then(function (state) {
+            var items = state.baoGiaMasters;
+            var now = new Date().toISOString();
+
+            switch (functionName) {
+              case "Rpc.rpc_listBaoGiaMaster":
+                return { ok: true, data: clone(items) };
+              case "Rpc.rpc_createBaoGiaMaster": {
+                var created = Object.assign({}, payload.values || {});
+                created.id = created.id || nextId(items);
+                created.createdAt = created.createdAt || now;
+                created.updatedAt = now;
+                items.push(created);
+                return { ok: true, data: clone(created) };
+              }
+              case "Rpc.rpc_updateBaoGiaMaster": {
+                var updateIndex = items.findIndex(function (item) { return item.id === payload.key; });
+                if (updateIndex < 0) {
+                  return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
+                }
+                var updated = Object.assign({}, items[updateIndex], payload.values || {}, { id: payload.key, updatedAt: now });
+                items[updateIndex] = updated;
+                return { ok: true, data: clone(updated) };
+              }
+              case "Rpc.rpc_deleteBaoGiaMaster": {
+                var deleteIndex = items.findIndex(function (item) { return item.id === payload.key; });
+                if (deleteIndex < 0) {
+                  return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
+                }
+                items.splice(deleteIndex, 1);
+                return { ok: true };
+              }
+              default:
+                return Promise.reject(new Error("Mock chưa hỗ trợ RPC: " + functionName));
+            }
+          });
+        };
+
+        loadState().then(function (state) {
+          if (!global.__env) {
+            global.__env = {
+              production: false,
+              currentUser: JSON.stringify({
+                userId: "local-user",
+                userName: "local",
+                fullName: "Người dùng local",
+                email: "local@example.com",
+                permissions: []
+              }),
+              initData: JSON.stringify({ dataBaoGiaMaster: clone(state.baoGiaMasters) })
+            };
+          }
+        });
+      })(window);
+    </script>
+  <link rel="stylesheet" href="styles.css"></head>
+  <body class="dx-viewport">
+    <app-root></app-root>
+  <script src="runtime-es2015.js" type="module"></script><script src="runtime-es5.js" nomodule defer></script><script src="polyfills-es5.js" nomodule defer></script><script src="polyfills-es2015.js" type="module"></script><script src="main-es2015.js" type="module"></script><script src="main-es5.js" nomodule defer></script></body>
+</html>
