@@ -57,7 +57,11 @@
         "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản.",
         "ghi_chu": "Báo giá có hiệu lực trong 15 ngày.",
         "createdAt": "2026-09-04T02:30:00.000Z",
-        "updatedAt": "2026-09-04T02:30:00.000Z"
+        "updatedAt": "2026-09-04T02:30:00.000Z",
+        "print_file_id": "MOCK-BG-001",
+        "print_file_name": "BG_BG-MKH0001-260904_local",
+        "print_file_url": "https://drive.google.com/file/d/MOCK-BG-001/view",
+        "print_created_at": "2026-09-04T02:35:00.000Z"
       },
       "details": [
         {
@@ -75,8 +79,7 @@
           "don_gia_sau_vat": 579960,
           "ghi_chu": ""
         }
-      ],
-      "printHistory": []
+      ]
     }
   ]
 }
