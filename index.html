@@ -29,53 +29,121 @@
                 return response.json();
               })
               .then(function (json) {
-                return { baoGiaMasters: (json.baoGiaMasters || []).map(function (item) { return Object.assign({}, item); }) };
+                return {
+                  customers: clone(json.customers || []),
+                  products: clone(json.products || []),
+                  quotations: clone(json.quotations || [])
+                };
               });
           }
           return statePromise;
         }
 
-        function nextId(items) {
-          var max = items.reduce(function (currentMax, item) {
-            var match = String(item.id || "").match(/(\d+)$/);
+        function listMasters(state) {
+          return state.quotations.map(function (item) { return item.master; });
+        }
+
+        function nextId(quotations) {
+          var max = quotations.reduce(function (currentMax, item) {
+            var match = String(item.master.id || "").match(/(\d+)$/);
             return Math.max(currentMax, match ? parseInt(match[1], 10) : 0);
           }, 0);
           return "BG-" + String(max + 1).padStart(3, "0");
         }
 
+        function findQuotation(state, key) {
+          return state.quotations.find(function (item) { return item.master.id === key; });
+        }
+
+        function snapshotDetails(state, quotationId, details, now) {
+          return (details || []).map(function (detail, index) {
+            var product = state.products.find(function (item) {
+              return item.id === detail.hang_hoa_id || item.hang_hoa_id === detail.hang_hoa_id;
+            });
+            var price = Number(detail.don_gia_chua_vat) || 0;
+            return Object.assign({}, product || {}, detail, {
+              id: detail.id || quotationId + "-D" + (index + 1),
+              bao_gia_id: quotationId,
+              line_no: index + 1,
+              don_gia_goc_chua_vat: Number(product && product.don_gia_goc_chua_vat) || 0,
+              vat_percent: Number(product && product.vat_percent) || 0,
+              don_gia_chua_vat: price,
+              don_gia_sau_vat: Math.round(price * (1 + (Number(product && product.vat_percent) || 0) / 100)),
+              updatedAt: now
+            });
+          });
+        }
+
         global._appScriptApi = function (functionName, payload) {
           payload = payload || {};
           return loadState().then(function (state) {
-            var items = state.baoGiaMasters;
             var now = new Date().toISOString();
 
             switch (functionName) {
               case "Rpc.rpc_listBaoGiaMaster":
-                return { ok: true, data: clone(items) };
-              case "Rpc.rpc_createBaoGiaMaster": {
-                var created = Object.assign({}, payload.values || {});
-                created.id = created.id || nextId(items);
-                created.createdAt = created.createdAt || now;
-                created.updatedAt = now;
-                items.push(created);
+                return { ok: true, data: clone(listMasters(state)) };
+              case "Rpc.rpc_listBaoGiaLookups":
+                return { ok: true, data: clone({ customers: state.customers, products: state.products }) };
+              case "Rpc.rpc_getBaoGia": {
+                var found = findQuotation(state, payload.key);
+                return found
+                  ? { ok: true, data: clone(found) }
+                  : { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
+              }
+              case "Rpc.rpc_createBaoGia": {
+                var createdId = nextId(state.quotations);
+                var createdMaster = Object.assign({}, payload.master || {}, {
+                  id: createdId, createdAt: now, updatedAt: now
+                });
+                var duplicate = state.quotations.some(function (item) {
+                  return item.master.so_bao_gia.trim() === createdMaster.so_bao_gia.trim();
+                });
+                if (duplicate) {
+                  return { ok: false, error: { code: "duplicateQuotationNumber", message: "Số báo giá đã tồn tại" } };
+                }
+                var created = {
+                  master: createdMaster,
+                  details: snapshotDetails(state, createdId, payload.details, now),
+                  printHistory: []
+                };
+                state.quotations.push(created);
                 return { ok: true, data: clone(created) };
               }
-              case "Rpc.rpc_updateBaoGiaMaster": {
-                var updateIndex = items.findIndex(function (item) { return item.id === payload.key; });
+              case "Rpc.rpc_updateBaoGia": {
+                var updateIndex = state.quotations.findIndex(function (item) { return item.master.id === payload.key; });
                 if (updateIndex < 0) {
                   return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
                 }
-                var updated = Object.assign({}, items[updateIndex], payload.values || {}, { id: payload.key, updatedAt: now });
-                items[updateIndex] = updated;
+                var previous = state.quotations[updateIndex];
+                var updated = {
+                  master: Object.assign({}, previous.master, payload.master || {}, { id: payload.key, updatedAt: now }),
+                  details: snapshotDetails(state, payload.key, payload.details, now),
+                  printHistory: previous.printHistory || []
+                };
+                state.quotations[updateIndex] = updated;
                 return { ok: true, data: clone(updated) };
               }
-              case "Rpc.rpc_deleteBaoGiaMaster": {
-                var deleteIndex = items.findIndex(function (item) { return item.id === payload.key; });
+              case "Rpc.rpc_deleteBaoGia": {
+                var deleteIndex = state.quotations.findIndex(function (item) { return item.master.id === payload.key; });
                 if (deleteIndex < 0) {
                   return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
                 }
-                items.splice(deleteIndex, 1);
-                return { ok: true };
+                state.quotations.splice(deleteIndex, 1);
+                return { ok: true, data: { id: payload.key } };
+              }
+              case "Rpc.rpc_generateBaoGiaPrint": {
+                var quotation = findQuotation(state, payload.key);
+                if (!quotation) {
+                  return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
+                }
+                var printResult = {
+                  fileId: "MOCK-" + quotation.master.id,
+                  fileName: "BG_" + quotation.master.so_bao_gia + "_local",
+                  fileUrl: "about:blank#" + encodeURIComponent(quotation.master.so_bao_gia),
+                  createdAt: now
+                };
+                quotation.printHistory.push(printResult);
+                return { ok: true, data: clone(printResult) };
               }
               default:
                 return Promise.reject(new Error("Mock chưa hỗ trợ RPC: " + functionName));
@@ -94,7 +162,7 @@
                 email: "local@example.com",
                 permissions: []
               }),
-              initData: JSON.stringify({ dataBaoGiaMaster: clone(state.baoGiaMasters) })
+              initData: JSON.stringify({ dataBaoGiaMaster: clone(listMasters(state)) })
             };
           }
         });

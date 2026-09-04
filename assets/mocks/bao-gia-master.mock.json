@@ -1,34 +1,82 @@
 {
-  "baoGiaMasters": [
+  "customers": [
     {
-      "id": "BG-001",
-      "so_bao_gia": "BG-2026-001",
-      "ngay": "2026-09-01T00:00:00.000Z",
-      "ma_kh": "KH-001",
-      "ten_kh": "Nguyễn Văn An",
-      "dia_chi_kh": "Quận 1, TP. Hồ Chí Minh",
-      "ten_cty": "Công ty TNHH An Phát",
-      "dia_chi_cty": "Quận 3, TP. Hồ Chí Minh",
-      "sdt_cty": "0901234567",
-      "email_cty": "lienhe@anphat.vn",
-      "ghi_chu": "Báo giá có hiệu lực trong 15 ngày.",
-      "createdAt": "2026-09-01T02:30:00.000Z",
-      "updatedAt": "2026-09-01T02:30:00.000Z"
+      "id": "KH-001",
+      "khach_hang_id": "KH-001",
+      "ma_kh": "MKH0001",
+      "kinh_gui": "Công ty TNHH An Phát",
+      "dia_chi": "Quận 3, TP. Hồ Chí Minh",
+      "dieu_kien_thanh_toan": "Thanh toán trong vòng 15 ngày.",
+      "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản."
     },
     {
-      "id": "BG-002",
-      "so_bao_gia": "BG-2026-002",
-      "ngay": "2026-09-02T00:00:00.000Z",
-      "ma_kh": "KH-002",
-      "ten_kh": "Trần Minh Châu",
-      "dia_chi_kh": "Thành phố Thủ Đức, TP. Hồ Chí Minh",
-      "ten_cty": "Công ty Cổ phần Minh Châu",
-      "dia_chi_cty": "Quận Bình Thạnh, TP. Hồ Chí Minh",
-      "sdt_cty": "02838123456",
-      "email_cty": "contact@minhchau.vn",
-      "ghi_chu": "Giá chưa bao gồm chi phí vận chuyển.",
-      "createdAt": "2026-09-02T03:15:00.000Z",
-      "updatedAt": "2026-09-02T03:15:00.000Z"
+      "id": "KH-002",
+      "khach_hang_id": "KH-002",
+      "ma_kh": "MKH0002",
+      "kinh_gui": "Công ty Cổ phần Minh Châu",
+      "dia_chi": "Quận Bình Thạnh, TP. Hồ Chí Minh",
+      "dieu_kien_thanh_toan": "Thanh toán trong vòng 30 ngày.",
+      "phuong_thuc_thanh_toan": "Chuyển khoản."
+    }
+  ],
+  "products": [
+    {
+      "id": "HH-001",
+      "hang_hoa_id": "HH-001",
+      "ma_hang": "CRG-25",
+      "thong_tin_san_pham": "Carrageenan\nXuất xứ: Trung Quốc\nNhà sản xuất: GREEN FRESH (FUJIAN) FOODSTUFF CO., LTD\nBảo quản: Nhiệt độ bình thường",
+      "quy_cach": "25 kg/bao",
+      "dvt": "Kg",
+      "don_gia_goc_chua_vat": 537000,
+      "vat_percent": 8,
+      "ghi_chu": ""
+    },
+    {
+      "id": "HH-002",
+      "hang_hoa_id": "HH-002",
+      "ma_hang": "XAN-20",
+      "thong_tin_san_pham": "Xanthan Gum\nXuất xứ: Trung Quốc",
+      "quy_cach": "20 kg/bao",
+      "dvt": "Kg",
+      "don_gia_goc_chua_vat": 210000,
+      "vat_percent": 8,
+      "ghi_chu": ""
+    }
+  ],
+  "quotations": [
+    {
+      "master": {
+        "id": "BG-001",
+        "so_bao_gia": "BG-MKH0001-260904",
+        "ngay": "2026-09-04T00:00:00.000Z",
+        "khach_hang_id": "KH-001",
+        "ma_kh": "MKH0001",
+        "kinh_gui": "Công ty TNHH An Phát",
+        "dia_chi": "Quận 3, TP. Hồ Chí Minh",
+        "dieu_kien_thanh_toan": "Thanh toán trong vòng 15 ngày.",
+        "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản.",
+        "ghi_chu": "Báo giá có hiệu lực trong 15 ngày.",
+        "createdAt": "2026-09-04T02:30:00.000Z",
+        "updatedAt": "2026-09-04T02:30:00.000Z"
+      },
+      "details": [
+        {
+          "id": "BGD-001",
+          "bao_gia_id": "BG-001",
+          "line_no": 1,
+          "hang_hoa_id": "HH-001",
+          "ma_hang": "CRG-25",
+          "thong_tin_san_pham": "Carrageenan\nXuất xứ: Trung Quốc",
+          "quy_cach": "25 kg/bao",
+          "dvt": "Kg",
+          "don_gia_goc_chua_vat": 537000,
+          "don_gia_chua_vat": 537000,
+          "vat_percent": 8,
+          "don_gia_sau_vat": 579960,
+          "ghi_chu": ""
+        }
+      ],
+      "printHistory": []
     }
   ]
 }
