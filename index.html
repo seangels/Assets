@@ -60,20 +60,40 @@
             var product = state.products.find(function (item) {
               return item.ma_hang === (detail.ma_hang || detail.hang_hoa_id);
             });
-            var price = Number(detail.don_gia_chua_vat) || 0;
-            return Object.assign({}, product || {}, detail, {
-              id: detail.id || quotationId + "-D" + (index + 1),
+            if (!product) {
+              throw new Error("Hàng hóa không tồn tại trong danh mục mẫu");
+            }
+            var rawPrice = detail.don_gia_chua_vat;
+            var price = typeof rawPrice === "number" || typeof rawPrice === "string" && rawPrice.trim() !== ""
+              ? Number(rawPrice) : NaN;
+            if (!isFinite(price) || price < 0) {
+              throw new Error("Đơn giá chưa VAT phải là số không âm");
+            }
+            var rawVat = detail.vat_percent;
+            var vatIsBlank = rawVat == null || typeof rawVat === "string" && rawVat.trim() === "";
+            var vat = vatIsBlank ? 8
+              : typeof rawVat === "number" || typeof rawVat === "string" ? Number(rawVat) : NaN;
+            if (!isFinite(vat) || vat < 0 || vat > 100) {
+              throw new Error("VAT phải là số từ 0 đến 100");
+            }
+            return {
+              id: quotationId + "-D" + (index + 1),
               bao_gia_id: quotationId,
               line_no: index + 1,
-              hang_hoa_id: product ? product.ma_hang : detail.hang_hoa_id,
-              ma_hang: product ? product.ma_hang : detail.ma_hang,
-              ma_sp: product ? product.ma_sp : detail.ma_sp,
-              don_gia_goc_chua_vat: Number(product && product.don_gia_goc_chua_vat) || 0,
-              vat_percent: Number(product && product.vat_percent) || 0,
+              hang_hoa_id: product.ma_hang,
+              ma_hang: product.ma_hang,
+              ma_sp: product.ma_sp,
+              thong_tin_san_pham: product.thong_tin_san_pham,
+              quy_cach: product.quy_cach,
+              dvt: product.dvt,
+              don_gia_goc_chua_vat: Number(product.don_gia_goc_chua_vat) || 0,
               don_gia_chua_vat: price,
-              don_gia_sau_vat: Math.round(price * (1 + (Number(product && product.vat_percent) || 0) / 100)),
+              vat_percent: vat,
+              don_gia_sau_vat: Math.round(price * (1 + vat / 100)),
+              ghi_chu: product.ghi_chu || "",
+              createdAt: now,
               updatedAt: now
-            });
+            };
           });
         }
 
