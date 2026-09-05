@@ -36,6 +36,7 @@
       "thong_tin_san_pham": "Carrageenan\nXuất xứ: Trung Quốc\nNhà sản xuất: GREEN FRESH (FUJIAN) FOODSTUFF CO., LTD\nBảo quản: Nhiệt độ bình thường",
       "quy_cach": "25 kg/bao",
       "dvt": "Kg",
+      "bao_quan": "Nhiệt độ bình thường",
       "don_gia_goc_chua_vat": 537000,
       "vat_percent": 8,
       "ghi_chu": ""
@@ -49,9 +50,10 @@
       "ten_hang": "Xanthan Gum 20 kg",
       "xuat_xu": "Trung Quốc",
       "nhasx": "",
-      "thong_tin_san_pham": "Xanthan Gum\nXuất xứ: Trung Quốc",
+      "thong_tin_san_pham": "Xanthan Gum\nXuất xứ: Trung Quốc\nBảo quản: Nơi khô ráo, thoáng mát",
       "quy_cach": "20 kg/bao",
       "dvt": "Kg",
+      "bao_quan": "Nơi khô ráo, thoáng mát",
       "don_gia_goc_chua_vat": 210000,
       "vat_percent": 8,
       "ghi_chu": ""
