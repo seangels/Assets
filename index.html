@@ -58,13 +58,16 @@
         function snapshotDetails(state, quotationId, details, now) {
           return (details || []).map(function (detail, index) {
             var product = state.products.find(function (item) {
-              return item.id === detail.hang_hoa_id || item.hang_hoa_id === detail.hang_hoa_id;
+              return item.ma_hang === (detail.ma_hang || detail.hang_hoa_id);
             });
             var price = Number(detail.don_gia_chua_vat) || 0;
             return Object.assign({}, product || {}, detail, {
               id: detail.id || quotationId + "-D" + (index + 1),
               bao_gia_id: quotationId,
               line_no: index + 1,
+              hang_hoa_id: product ? product.ma_hang : detail.hang_hoa_id,
+              ma_hang: product ? product.ma_hang : detail.ma_hang,
+              ma_sp: product ? product.ma_sp : detail.ma_sp,
               don_gia_goc_chua_vat: Number(product && product.don_gia_goc_chua_vat) || 0,
               vat_percent: Number(product && product.vat_percent) || 0,
               don_gia_chua_vat: price,
