@@ -42,6 +42,23 @@
       "ghi_chu": ""
     },
     {
+      "id": "HH-003",
+      "hang_hoa_id": "HH-003",
+      "ma_hang": "CRG-25-B",
+      "ma_sp": "CRG",
+      "ten_sp": "Carrageenan",
+      "ten_hang": "Carrageenan loại B",
+      "xuat_xu": "Trung Quốc",
+      "nhasx": "GREEN FRESH (FUJIAN) FOODSTUFF CO., LTD",
+      "thong_tin_san_pham": "Carrageenan loại B\nXuất xứ: Trung Quốc\nNhà sản xuất: GREEN FRESH (FUJIAN) FOODSTUFF CO., LTD\nBảo quản: Nhiệt độ bình thường",
+      "quy_cach": "25 kg/bao",
+      "dvt": "Kg",
+      "bao_quan": "Nhiệt độ bình thường",
+      "don_gia_goc_chua_vat": 550000,
+      "vat_percent": 8,
+      "ghi_chu": ""
+    },
+    {
       "id": "HH-002",
       "hang_hoa_id": "HH-002",
       "ma_hang": "XAN-20",

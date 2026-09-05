@@ -86,7 +86,13 @@
               case "Rpc.rpc_listBaoGiaMaster":
                 return { ok: true, data: clone(listMasters(state)) };
               case "Rpc.rpc_listBaoGiaLookups":
-                return { ok: true, data: clone({ customers: state.customers, products: state.products }) };
+                return {
+                  ok: true,
+                  data: clone({
+                    customers: payload.scope === "products" ? [] : state.customers,
+                    products: payload.scope === "customers" ? [] : state.products
+                  })
+                };
               case "Rpc.rpc_getBaoGia": {
                 var found = findQuotation(state, payload.key);
                 return found
