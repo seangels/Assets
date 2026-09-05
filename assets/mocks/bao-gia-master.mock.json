@@ -1,8 +1,6 @@
 {
   "customers": [
     {
-      "id": "KH-001",
-      "khach_hang_id": "KH-001",
       "ma_kh": "MKH0001",
       "ten_kh": "Công ty TNHH An Phát",
       "sdt_kh": "0901 234 567",
@@ -12,8 +10,6 @@
       "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản."
     },
     {
-      "id": "KH-002",
-      "khach_hang_id": "KH-002",
       "ma_kh": "MKH0002",
       "ten_kh": "Công ty Cổ phần Minh Châu",
       "sdt_kh": "0902 345 678",
@@ -25,8 +21,6 @@
   ],
   "products": [
     {
-      "id": "HH-001",
-      "hang_hoa_id": "HH-001",
       "ma_hang": "CRG-25",
       "ma_sp": "CRG",
       "ten_hang": "Carrageenan 25 kg",
@@ -41,8 +35,6 @@
       "ghi_chu": ""
     },
     {
-      "id": "HH-003",
-      "hang_hoa_id": "HH-003",
       "ma_hang": "CRG-25-B",
       "ma_sp": "CRG",
       "ten_hang": "Carrageenan loại B",
@@ -57,8 +49,6 @@
       "ghi_chu": ""
     },
     {
-      "id": "HH-002",
-      "hang_hoa_id": "HH-002",
       "ma_hang": "XAN-20",
       "ma_sp": "XAN",
       "ten_hang": "Xanthan Gum 20 kg",
@@ -77,9 +67,8 @@
     {
       "master": {
         "id": "BG-001",
-        "so_bao_gia": "BG-MKH0001-260904",
+        "so_bao_gia": "BG-MKH0001-260904-001",
         "ngay": "2026-09-04T00:00:00.000Z",
-        "khach_hang_id": "KH-001",
         "ma_kh": "MKH0001",
         "kinh_gui": "Công ty TNHH An Phát",
         "dia_chi": "Quận 3, TP. Hồ Chí Minh",
@@ -89,7 +78,7 @@
         "createdAt": "2026-09-04T02:30:00.000Z",
         "updatedAt": "2026-09-04T02:30:00.000Z",
         "print_file_id": "MOCK-BG-001",
-        "print_file_name": "BG_BG-MKH0001-260904_local",
+        "print_file_name": "BG_BG-MKH0001-260904-001_local",
         "print_file_url": "https://drive.google.com/file/d/MOCK-BG-001/view",
         "print_created_at": "2026-09-04T02:35:00.000Z"
       },
@@ -98,7 +87,6 @@
           "id": "BGD-001",
           "bao_gia_id": "BG-001",
           "line_no": 1,
-          "hang_hoa_id": "HH-001",
           "ma_hang": "CRG-25",
           "ma_sp": "CRG",
           "thong_tin_san_pham": "Carrageenan\nXuất xứ: Trung Quốc",

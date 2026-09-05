@@ -13,6 +13,8 @@
         }
 
         var mockDataUrl = "assets/mocks/bao-gia-master.mock.json";
+        // Mirrors the active quotation spreadsheet timezone used by the GAS backend.
+        var QUOTATION_FILE_TIME_ZONE = "Asia/Ho_Chi_Minh";
         var statePromise;
 
         function clone(value) {
@@ -55,10 +57,70 @@
           return state.quotations.find(function (item) { return item.master.id === key; });
         }
 
+        function resolveCustomer(state, master) {
+          var customerCode = String(master && master.ma_kh || "").trim();
+          var customer = state.customers.find(function (item) {
+            return String(item.ma_kh || "").trim() === customerCode;
+          });
+          if (!customer) {
+            throw new Error("Khách hàng không tồn tại trong danh mục mẫu");
+          }
+          return customer;
+        }
+
+        function quotationDate(value) {
+          var instant = new Date(value);
+          if (isNaN(instant.getTime())) {
+            throw new Error("Ngày báo giá không hợp lệ");
+          }
+          var parts = new Intl.DateTimeFormat("en-CA", {
+            timeZone: QUOTATION_FILE_TIME_ZONE,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+          }).formatToParts(instant).reduce(function (result, part) {
+            if (part.type !== "literal") {
+              result[part.type] = part.value;
+            }
+            return result;
+          }, {});
+          return parts.year + "-" + parts.month + "-" + parts.day + "T00:00:00.000Z";
+        }
+
+        function quotationNumberPrefix(customerCode, canonicalDate) {
+          return "BG-" + customerCode + "-"
+            + canonicalDate.slice(2, 4) + canonicalDate.slice(5, 7) + canonicalDate.slice(8, 10) + "-";
+        }
+
+        function nextQuotationNumber(state, prefix, excludedId) {
+          var maxSuffix = state.quotations.reduce(function (currentMax, item) {
+            if (item.master.id === excludedId) {
+              return currentMax;
+            }
+            var number = String(item.master.so_bao_gia || "");
+            if (number.slice(0, prefix.length) !== prefix) {
+              return currentMax;
+            }
+            var suffix = number.slice(prefix.length);
+            return /^\d+$/.test(suffix) ? Math.max(currentMax, parseInt(suffix, 10)) : currentMax;
+          }, 0);
+          return prefix + String(maxSuffix + 1).padStart(3, "0");
+        }
+
+        function customerSnapshot(customer) {
+          return {
+            ma_kh: String(customer.ma_kh || "").trim(),
+            kinh_gui: customer.ten_kh || "",
+            dia_chi: customer.dia_chi || "",
+            dieu_kien_thanh_toan: customer.dieu_kien_thanh_toan || "",
+            phuong_thuc_thanh_toan: customer.phuong_thuc_thanh_toan || ""
+          };
+        }
+
         function snapshotDetails(state, quotationId, details, now) {
           return (details || []).map(function (detail, index) {
             var product = state.products.find(function (item) {
-              return item.ma_hang === (detail.ma_hang || detail.hang_hoa_id);
+              return item.ma_hang === detail.ma_hang;
             });
             if (!product) {
               throw new Error("Hàng hóa không tồn tại trong danh mục mẫu");
@@ -80,7 +142,6 @@
               id: quotationId + "-D" + (index + 1),
               bao_gia_id: quotationId,
               line_no: index + 1,
-              hang_hoa_id: product.ma_hang,
               ma_hang: product.ma_hang,
               ma_sp: product.ma_sp,
               thong_tin_san_pham: product.thong_tin_san_pham,
@@ -121,16 +182,18 @@
               }
               case "Rpc.rpc_createBaoGia": {
                 var createdId = nextId(state.quotations);
-                var createdMaster = Object.assign({}, payload.master || {}, {
-                  id: createdId, createdAt: now, updatedAt: now,
+                var createCustomer = resolveCustomer(state, payload.master);
+                var createDate = quotationDate(payload.master && payload.master.ngay);
+                var createCustomerData = customerSnapshot(createCustomer);
+                var createPrefix = quotationNumberPrefix(createCustomerData.ma_kh, createDate);
+                var createdMaster = Object.assign({}, createCustomerData, {
+                  id: createdId,
+                  so_bao_gia: nextQuotationNumber(state, createPrefix),
+                  ngay: createDate,
+                  ghi_chu: payload.master && payload.master.ghi_chu || "",
+                  createdAt: now, updatedAt: now,
                   print_file_id: "", print_file_name: "", print_file_url: "", print_created_at: null
                 });
-                var duplicate = state.quotations.some(function (item) {
-                  return item.master.so_bao_gia.trim() === createdMaster.so_bao_gia.trim();
-                });
-                if (duplicate) {
-                  return { ok: false, error: { code: "duplicateQuotationNumber", message: "Số báo giá đã tồn tại" } };
-                }
                 var created = {
                   master: createdMaster,
                   details: snapshotDetails(state, createdId, payload.details, now)
@@ -144,8 +207,24 @@
                   return { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
                 }
                 var previous = state.quotations[updateIndex];
-                var updatedMaster = Object.assign({}, previous.master, payload.master || {}, {
+                var updateCustomer = resolveCustomer(state, payload.master);
+                var updateDate = quotationDate(payload.master && payload.master.ngay);
+                var updateCustomerData = customerSnapshot(updateCustomer);
+                var identityChanged = previous.master.ma_kh !== updateCustomerData.ma_kh
+                  || quotationDate(previous.master.ngay).slice(0, 10) !== updateDate.slice(0, 10);
+                var updateNumber = identityChanged
+                  ? nextQuotationNumber(
+                    state,
+                    quotationNumberPrefix(updateCustomerData.ma_kh, updateDate),
+                    payload.key
+                  )
+                  : previous.master.so_bao_gia;
+                var updatedMaster = Object.assign({}, updateCustomerData, {
                   id: payload.key,
+                  so_bao_gia: updateNumber,
+                  ngay: updateDate,
+                  ghi_chu: payload.master && payload.master.ghi_chu || "",
+                  createdAt: previous.master.createdAt,
                   updatedAt: now,
                   print_file_id: previous.master.print_file_id || "",
                   print_file_name: previous.master.print_file_name || "",
