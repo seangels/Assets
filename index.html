@@ -107,14 +107,87 @@
           return prefix + String(maxSuffix + 1).padStart(3, "0");
         }
 
-        function customerSnapshot(customer) {
+        function previewQuotationNumber(state, payload) {
+          var customer = resolveCustomer(state, payload);
+          var canonicalDate = quotationDate(payload && payload.ngay);
+          var current = payload && payload.key ? findQuotation(state, payload.key) : null;
+          var unchanged = current && current.master.ma_kh === String(customer.ma_kh || "").trim()
+            && quotationDate(current.master.ngay).slice(0, 10) === canonicalDate.slice(0, 10);
+          return unchanged
+            ? current.master.so_bao_gia
+            : nextQuotationNumber(
+              state,
+              quotationNumberPrefix(String(customer.ma_kh || "").trim(), canonicalDate),
+              current && current.master.id
+            );
+        }
+
+        function numberConflict(requestedNumber, suggestedNumber) {
+          return {
+            ok: false,
+            error: {
+              code: "BAO_GIA_NUMBER_CONFLICT",
+              message: "Sá»‘ bÃ¡o giÃ¡ vá»«a Ä‘Æ°á»£c sá»­ dá»¥ng",
+              details: { requestedNumber: requestedNumber, suggestedNumber: suggestedNumber }
+            }
+          };
+        }
+
+        function resolveMutationNumber(payload, suggestedNumber) {
+          var requestedNumber = String(payload.master && payload.master.so_bao_gia || "").trim();
+          var policy = payload.numberPolicy == null || String(payload.numberPolicy).trim() === ""
+            ? "strict" : String(payload.numberPolicy).trim();
+          if (policy !== "strict" && policy !== "next_available") {
+            return {
+              error: {
+                ok: false,
+                error: {
+                  code: "VALIDATION_ERROR",
+                  message: "Chính sách cấp số báo giá không hợp lệ.",
+                  details: { field: "numberPolicy" }
+                }
+              }
+            };
+          }
+          if (policy === "next_available") {
+            return { number: suggestedNumber };
+          }
+          return requestedNumber === suggestedNumber
+            ? { number: requestedNumber }
+            : { conflict: numberConflict(requestedNumber, suggestedNumber) };
+        }
+
+        function resolveCustomerCatalogPolicy(payload) {
+          var policy = payload.customerCatalogPolicy == null || String(payload.customerCatalogPolicy).trim() === ""
+            ? "snapshot_only" : String(payload.customerCatalogPolicy).trim();
+          return policy === "snapshot_only" || policy === "update_source"
+            ? { policy: policy }
+            : {
+              error: {
+                ok: false,
+                error: {
+                  code: "VALIDATION_ERROR",
+                  message: "Chính sách cập nhật khách hàng không hợp lệ.",
+                  details: { field: "customerCatalogPolicy" }
+                }
+              }
+            };
+        }
+
+        function customerSnapshot(customer, master) {
           return {
             ma_kh: String(customer.ma_kh || "").trim(),
-            kinh_gui: customer.ten_kh || "",
-            dia_chi: customer.dia_chi || "",
-            dieu_kien_thanh_toan: customer.dieu_kien_thanh_toan || "",
-            phuong_thuc_thanh_toan: customer.phuong_thuc_thanh_toan || ""
+            kinh_gui: String(master && master.kinh_gui != null ? master.kinh_gui : customer.ten_kh || ""),
+            dia_chi: String(master && master.dia_chi != null ? master.dia_chi : customer.dia_chi || ""),
+            dieu_kien_thanh_toan: String(master && master.dieu_kien_thanh_toan != null
+              ? master.dieu_kien_thanh_toan : customer.dieu_kien_thanh_toan || "")
           };
+        }
+
+        function updateCustomerSource(customer, snapshot) {
+          customer.ten_kh = snapshot.kinh_gui;
+          customer.dia_chi = snapshot.dia_chi;
+          customer.dieu_kien_thanh_toan = snapshot.dieu_kien_thanh_toan;
         }
 
         function snapshotDetails(state, quotationId, details, now) {
@@ -144,10 +217,12 @@
               line_no: index + 1,
               ma_hang: product.ma_hang,
               ma_sp: product.ma_sp,
+              ten_hang: product.ten_hang,
+              xuat_xu: product.xuat_xu,
+              nha_sx: product.nhasx,
               thong_tin_san_pham: product.thong_tin_san_pham,
               quy_cach: product.quy_cach,
               dvt: product.dvt,
-              don_gia_goc_chua_vat: Number(product.don_gia_goc_chua_vat) || 0,
               don_gia_chua_vat: price,
               vat_percent: vat,
               don_gia_sau_vat: Math.round(price * (1 + vat / 100)),
@@ -180,15 +255,31 @@
                   ? { ok: true, data: clone(found) }
                   : { ok: false, error: { code: "notFound", message: "Không tìm thấy báo giá" } };
               }
+              case "Rpc.rpc_previewBaoGiaNumber":
+                return { ok: true, data: { so_bao_gia: previewQuotationNumber(state, payload) } };
               case "Rpc.rpc_createBaoGia": {
                 var createdId = nextId(state.quotations);
                 var createCustomer = resolveCustomer(state, payload.master);
+                var createCustomerPolicy = resolveCustomerCatalogPolicy(payload);
+                if (createCustomerPolicy.error) {
+                  return createCustomerPolicy.error;
+                }
                 var createDate = quotationDate(payload.master && payload.master.ngay);
-                var createCustomerData = customerSnapshot(createCustomer);
+                var createCustomerData = customerSnapshot(createCustomer, payload.master);
                 var createPrefix = quotationNumberPrefix(createCustomerData.ma_kh, createDate);
+                var createNumber = resolveMutationNumber(
+                  payload,
+                  nextQuotationNumber(state, createPrefix)
+                );
+                if (createNumber.conflict) {
+                  return createNumber.conflict;
+                }
+                if (createNumber.error) {
+                  return createNumber.error;
+                }
                 var createdMaster = Object.assign({}, createCustomerData, {
                   id: createdId,
-                  so_bao_gia: nextQuotationNumber(state, createPrefix),
+                  so_bao_gia: createNumber.number,
                   ngay: createDate,
                   ghi_chu: payload.master && payload.master.ghi_chu || "",
                   createdAt: now, updatedAt: now,
@@ -198,6 +289,9 @@
                   master: createdMaster,
                   details: snapshotDetails(state, createdId, payload.details, now)
                 };
+                if (createCustomerPolicy.policy === "update_source") {
+                  updateCustomerSource(createCustomer, createCustomerData);
+                }
                 state.quotations.push(created);
                 return { ok: true, data: clone(created) };
               }
@@ -208,20 +302,31 @@
                 }
                 var previous = state.quotations[updateIndex];
                 var updateCustomer = resolveCustomer(state, payload.master);
+                var updateCustomerPolicy = resolveCustomerCatalogPolicy(payload);
+                if (updateCustomerPolicy.error) {
+                  return updateCustomerPolicy.error;
+                }
                 var updateDate = quotationDate(payload.master && payload.master.ngay);
-                var updateCustomerData = customerSnapshot(updateCustomer);
+                var updateCustomerData = customerSnapshot(updateCustomer, payload.master);
                 var identityChanged = previous.master.ma_kh !== updateCustomerData.ma_kh
                   || quotationDate(previous.master.ngay).slice(0, 10) !== updateDate.slice(0, 10);
-                var updateNumber = identityChanged
+                var suggestedUpdateNumber = identityChanged
                   ? nextQuotationNumber(
                     state,
                     quotationNumberPrefix(updateCustomerData.ma_kh, updateDate),
                     payload.key
                   )
                   : previous.master.so_bao_gia;
+                var updateNumber = resolveMutationNumber(payload, suggestedUpdateNumber);
+                if (updateNumber.conflict) {
+                  return updateNumber.conflict;
+                }
+                if (updateNumber.error) {
+                  return updateNumber.error;
+                }
                 var updatedMaster = Object.assign({}, updateCustomerData, {
                   id: payload.key,
-                  so_bao_gia: updateNumber,
+                  so_bao_gia: updateNumber.number,
                   ngay: updateDate,
                   ghi_chu: payload.master && payload.master.ghi_chu || "",
                   createdAt: previous.master.createdAt,
@@ -235,6 +340,9 @@
                   master: updatedMaster,
                   details: snapshotDetails(state, payload.key, payload.details, now)
                 };
+                if (updateCustomerPolicy.policy === "update_source") {
+                  updateCustomerSource(updateCustomer, updateCustomerData);
+                }
                 state.quotations[updateIndex] = updated;
                 return { ok: true, data: clone(updated) };
               }

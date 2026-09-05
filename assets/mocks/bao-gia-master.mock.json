@@ -2,12 +2,11 @@
   "customers": [
     {
       "ma_kh": "MKH0001",
-      "ten_kh": "Công ty TNHH An Phát",
+      "ten_kh": "CHI NHÁNH TỔNG CÔNG TY CỔ PHẨN BIA- RƯỢU- NƯỚC GIẢI KHÁT SÀI GÒN- NHÀ MÁY BIA SÀI GÒN -NGUYỄN CHÍ THANH",
       "sdt_kh": "0901 234 567",
       "kinh_gui": "Công ty TNHH An Phát",
       "dia_chi": "Quận 3, TP. Hồ Chí Minh",
-      "dieu_kien_thanh_toan": "Thanh toán trong vòng 15 ngày.",
-      "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản."
+      "dieu_kien_thanh_toan": "Thanh toán trong vòng 15 ngày."
     },
     {
       "ma_kh": "MKH0002",
@@ -15,8 +14,7 @@
       "sdt_kh": "0902 345 678",
       "kinh_gui": "Công ty Cổ phần Minh Châu",
       "dia_chi": "Quận Bình Thạnh, TP. Hồ Chí Minh",
-      "dieu_kien_thanh_toan": "Thanh toán trong vòng 30 ngày.",
-      "phuong_thuc_thanh_toan": "Chuyển khoản."
+      "dieu_kien_thanh_toan": "Thanh toán trong vòng 30 ngày."
     }
   ],
   "products": [
@@ -30,7 +28,7 @@
       "quy_cach": "25 kg/bao",
       "dvt": "Kg",
       "bao_quan": "Nhiệt độ bình thường",
-      "don_gia_goc_chua_vat": 537000,
+      "don_gia_chua_vat": 537000,
       "vat_percent": 8,
       "ghi_chu": ""
     },
@@ -44,7 +42,7 @@
       "quy_cach": "25 kg/bao",
       "dvt": "Kg",
       "bao_quan": "Nhiệt độ bình thường",
-      "don_gia_goc_chua_vat": 550000,
+      "don_gia_chua_vat": 550000,
       "vat_percent": 8,
       "ghi_chu": ""
     },
@@ -58,7 +56,7 @@
       "quy_cach": "20 kg/bao",
       "dvt": "Kg",
       "bao_quan": "Nơi khô ráo, thoáng mát",
-      "don_gia_goc_chua_vat": 210000,
+      "don_gia_chua_vat": 210000,
       "vat_percent": 8,
       "ghi_chu": ""
     }
@@ -73,7 +71,6 @@
         "kinh_gui": "Công ty TNHH An Phát",
         "dia_chi": "Quận 3, TP. Hồ Chí Minh",
         "dieu_kien_thanh_toan": "Thanh toán trong vòng 15 ngày.",
-        "phuong_thuc_thanh_toan": "Thanh toán bằng tiền mặt hoặc chuyển khoản.",
         "ghi_chu": "Báo giá có hiệu lực trong 15 ngày.",
         "createdAt": "2026-09-04T02:30:00.000Z",
         "updatedAt": "2026-09-04T02:30:00.000Z",
@@ -89,10 +86,12 @@
           "line_no": 1,
           "ma_hang": "CRG-25",
           "ma_sp": "CRG",
+          "ten_hang": "Carrageenan 25 kg",
+          "xuat_xu": "Trung Quốc",
+          "nha_sx": "GREEN FRESH (FUJIAN) FOODSTUFF CO., LTD",
           "thong_tin_san_pham": "Carrageenan\nXuất xứ: Trung Quốc",
           "quy_cach": "25 kg/bao",
           "dvt": "Kg",
-          "don_gia_goc_chua_vat": 537000,
           "don_gia_chua_vat": 537000,
           "vat_percent": 8,
           "don_gia_sau_vat": 579960,
